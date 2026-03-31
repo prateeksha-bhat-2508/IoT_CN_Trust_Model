@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import random
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 
 # 🔹 Step 1: Create 200 IoT nodes
@@ -41,18 +41,33 @@ protocols = ["TCP", "UDP", "ICMP"]
 for node in G.nodes():
 
     # -------- Feature generation FIRST --------
-    if G.nodes[node]['malicious']:
-        pdr = np.random.uniform(0.2, 0.6)
-        drop = np.random.uniform(0.4, 0.8)
+    attack_types = ["DoS", "Delay", "Normal"]
+    if random.random() < 0.4:
+        attack = random.choice(["DoS", "Delay"])
     else:
-        pdr = np.random.uniform(0.7, 1.0)
-        drop = np.random.uniform(0.0, 0.3)
+        attack = "Normal"
 
-    delay = np.random.uniform(1, 10)
+    if attack == "DoS":
+        pdr = np.random.uniform(0.2, 0.5)
+        drop = np.random.uniform(0.5, 0.9)
+        delay = np.random.uniform(5, 10)
+
+    elif attack == "Delay":
+        pdr = np.random.uniform(0.6, 0.8)
+        drop = np.random.uniform(0.2, 0.4)
+        delay = np.random.uniform(8, 15)
+
+    else:  # Normal
+        pdr = np.random.uniform(0.8, 1.0)
+        drop = np.random.uniform(0.0, 0.2)
+        delay = np.random.uniform(1, 5)
+
     freq = np.random.uniform(5, 20)
 
     energy = 1 + (drop * 3) + (delay * 0.1)
-    label = 1 if G.nodes[node]['malicious'] else 0
+
+    label = 0 if attack == "Normal" else 1
+   
 
     # -------- Packet simulation AFTER features --------
     neighbors = list(G.neighbors(node))
@@ -91,7 +106,7 @@ y = df["Label"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-model = DecisionTreeClassifier()
+model = RandomForestClassifier(n_estimators=50)
 model.fit(X_train, y_train)
 
 accuracy = model.score(X_test, y_test)
@@ -99,11 +114,47 @@ print("ML Accuracy:", accuracy)
 
 # 🔹 Step 7: Trust calculation (baseline)
 df["Trust"] = 0.7 * df["PDR"] - 0.3 * df["DropRate"]
+neighbor_trusts = []
+
+for node in G.nodes():
+    neighbors = list(G.neighbors(node))
+    if neighbors:
+        avg_neighbor_trust = np.mean([df.loc[n, "Trust"] for n in neighbors])
+    else:
+        avg_neighbor_trust = df.loc[node, "Trust"]
+
+    final_trust = 0.6 * df.loc[node, "Trust"] + 0.4 * avg_neighbor_trust
+    neighbor_trusts.append(final_trust)
+
+df["FinalTrust"] = neighbor_trusts
+
+# 🔹 Neighbor visualization table data
+neighbor_info = []
+
+for node in G.nodes():
+    neighbors = list(G.neighbors(node))
+
+    if neighbors:
+        avg_neighbor_trust = round(np.mean([df.loc[n, "Trust"] for n in neighbors]), 3)
+    else:
+        avg_neighbor_trust = df.loc[node, "Trust"]
+
+    neighbor_info.append([
+        node,
+        str(neighbors[:3]),  # show only first 3 neighbors
+        round(df.loc[node, "Trust"], 3),
+        round(avg_neighbor_trust, 3),
+        round(df.loc[node, "FinalTrust"], 3)
+    ])
+
+neighbor_df = pd.DataFrame(neighbor_info, columns=[
+    "Node", "Neighbors", "Own Trust", "Neighbor Avg", "Final Trust"
+])
 
 # 🔹 Step 8: Plot Trust graph
 # 🔹 Trust graph
 plt.figure(figsize=(14, 8))
-plt.plot(df["Trust"])
+plt.plot(df["FinalTrust"])
 plt.title("Trust Values of Nodes")
 plt.xlabel("Node Index")
 plt.ylabel("Trust")
@@ -112,7 +163,7 @@ plt.ylabel("Trust")
 plt.figure(figsize=(14, 10))
 
 pos = nx.spring_layout(G, k=0.5, iterations=50, seed=42)
-colors = ["red" if G.nodes[n]['malicious'] else "green" for n in G.nodes()]
+colors = ["red" if df.loc[n, "Label"] == 1 else "green" for n in G.nodes()]
 
 nx.draw(
     G, pos,
@@ -129,20 +180,26 @@ plt.title("IoT Network Graph")
 
 # ✅ SINGLE show at the end
 
-fig, axs = plt.subplots(2, 2, figsize=(14, 10))
+fig, axs = plt.subplots(2, 3, figsize=(16, 10))
 
 # 🔹 Trust vs Time
 trust_over_time = []
+
 for t in range(10):
-    df["PDR"] += np.random.normal(0, 0.02, len(df))
-    df["DropRate"] += np.random.normal(0, 0.02, len(df))
+    temp_pdr = df["PDR"] + np.random.normal(0, 0.05, len(df))
+    temp_drop = df["DropRate"] + np.random.normal(0, 0.05, len(df))
 
-    df["PDR"] = df["PDR"].clip(0, 1)
-    df["DropRate"] = df["DropRate"].clip(0, 1)
+    temp_pdr = temp_pdr.clip(0, 1)
+    temp_drop = temp_drop.clip(0, 1)
 
-    trust = 0.7 * df["PDR"] - 0.3 * df["DropRate"]
+    trust = 0.7 * temp_pdr - 0.3 * temp_drop
+    trust += np.random.normal(0, 0.02, len(df))
+
+    # 🔥 ADD randomness
+   
+
     trust_over_time.append(trust.mean())
-
+    
 axs[0, 0].plot(trust_over_time, marker='o')
 axs[0, 0].set_title("Trust vs Time")
 
@@ -156,9 +213,15 @@ axs[0, 1].set_title("Energy")
 # 🔹 Computations
 baseline_computations = len(df) * 10
 ml_computations = len(df)
+attack_counts = df["Label"].value_counts()
 
+axs[0, 2].bar(["Normal", "Malicious"], attack_counts)
+axs[0, 2].set_title("Attack Distribution")
 axs[1, 0].bar(["Baseline", "ML"], [baseline_computations, ml_computations], width=0.3)
 axs[1, 0].set_title("Computations")
+
+axs[1, 2].bar(["Success", "Dropped"], [success_count, drop_count])
+axs[1, 2].set_title("Packet Stats")
 
 # 🔹 Confusion Matrix
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -172,20 +235,41 @@ axs[1, 1].set_title("Confusion Matrix")
 
 plt.tight_layout()
 
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(14, 6))
 
-# 🔹 Left: Packet table (sample)
+# 🔹 LEFT: Neighbor Trust Table
 plt.subplot(1, 2, 1)
 plt.axis('off')
 
-table = plt.table(
-    cellText=packet_df.head(15).values,
+table1 = plt.table(
+    cellText=neighbor_df.head(10).values,
+    colLabels=neighbor_df.columns,
+    loc='center'
+)
+
+table1.auto_set_font_size(False)
+table1.set_fontsize(8)
+
+plt.title("Neighbor Trust Influence")
+
+# 🔹 RIGHT: Packet Logs
+plt.subplot(1, 2, 2)
+plt.axis('off')
+
+table2 = plt.table(
+    cellText=packet_df.head(10).values,
     colLabels=packet_df.columns,
     loc='center'
 )
 
-table.auto_set_font_size(False)
-table.set_fontsize(8)
+table2.auto_set_font_size(False)
+table2.set_fontsize(8)
 
-plt.title("Packet Logs (Source → Destination | Protocol | Status)")
+plt.title("Packet Logs")
+
+plt.tight_layout()
+
+
+plt.title("Packet Transmission Stats")
+plt.ylabel("Count")
 plt.show()
