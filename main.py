@@ -127,6 +127,11 @@ for node in G.nodes():
     neighbor_trusts.append(final_trust)
 
 df["FinalTrust"] = neighbor_trusts
+# 🔹 Packet-based trust (global)
+packet_trust = success_count / (success_count + drop_count + 1e-5)
+
+# 🔹 Hybrid Trust (NEW - BEST FEATURE)
+df["HybridTrust"] = 0.7 * df["FinalTrust"] + 0.3 * packet_trust
 
 # 🔹 Neighbor visualization table data
 neighbor_info = []
@@ -154,7 +159,9 @@ neighbor_df = pd.DataFrame(neighbor_info, columns=[
 # 🔹 Step 8: Plot Trust graph
 # 🔹 Trust graph
 plt.figure(figsize=(14, 8))
-plt.plot(df["FinalTrust"])
+plt.plot(df["FinalTrust"], label="Neighbor Trust")
+plt.plot(df["HybridTrust"], label="Hybrid Trust")
+plt.legend()
 plt.title("Trust Values of Nodes")
 plt.xlabel("Node Index")
 plt.ylabel("Trust")
