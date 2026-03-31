@@ -7,28 +7,40 @@ from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
 
 # 🔹 Step 1: Create 200 IoT nodes
+# 🔹 Step 1: Create IoT Network
 G = nx.Graph()
 num_nodes = 100
 
+node_ips = {}
+
 for i in range(num_nodes):
     G.add_node(i)
+    node_ips[i] = f"192.168.1.{i+1}"
 
-# 🔹 Step 2: Random connections
+# 🔹 Step 2: Create connections
 for i in range(num_nodes):
-    for j in range(i+1, num_nodes):
-        if random.random() < 0.05:  # lower prob for large graph
+    for j in range(i + 1, num_nodes):
+        if random.random() < 0.05:
             G.add_edge(i, j)
 
-# 🔹 Step 3: Malicious nodes (20%)
+# 🔹 Step 3: Malicious nodes
 malicious_nodes = random.sample(range(num_nodes), int(0.2 * num_nodes))
 
 for node in G.nodes():
     G.nodes[node]['malicious'] = node in malicious_nodes
 
-# 🔹 Step 4: Generate features
+# 🔹 Step 4: Initialize storage
 data = []
+packet_logs = []
+success_count = 0
+drop_count = 0
 
+protocols = ["TCP", "UDP", "ICMP"]
+
+# 🔹 Step 5: Simulation loop
 for node in G.nodes():
+
+    # -------- Feature generation FIRST --------
     if G.nodes[node]['malicious']:
         pdr = np.random.uniform(0.2, 0.6)
         drop = np.random.uniform(0.4, 0.8)
@@ -38,19 +50,39 @@ for node in G.nodes():
 
     delay = np.random.uniform(1, 10)
     freq = np.random.uniform(5, 20)
-    # base energy
-    base_energy = np.random.uniform(1, 3)
 
-    # increase energy based on behavior
-    energy = base_energy + (drop * 3) + (delay * 0.1)
-
+    energy = 1 + (drop * 3) + (delay * 0.1)
     label = 1 if G.nodes[node]['malicious'] else 0
 
+    # -------- Packet simulation AFTER features --------
+    neighbors = list(G.neighbors(node))
+    if neighbors:
+        dest = random.choice(neighbors)
+
+        src_ip = node_ips[node]
+        dst_ip = node_ips[dest]
+        protocol = random.choice(protocols)
+
+        if random.random() < drop:
+            status = "Dropped"
+            drop_count += 1
+        else:
+            status = "Success"
+            success_count += 1
+
+        packet_logs.append([src_ip, dst_ip, protocol, status])
+
+    # -------- Store data --------
     data.append([pdr, drop, delay, freq, energy, label])
 
-# 🔹 Step 5: DataFrame
+# 🔹 Step 6: Convert to DataFrame
 df = pd.DataFrame(data, columns=[
     "PDR", "DropRate", "Delay", "Frequency", "Energy", "Label"
+])
+
+# 🔹 Step 7: Packet DataFrame
+packet_df = pd.DataFrame(packet_logs, columns=[
+    "Source", "Destination", "Protocol", "Status"
 ])
 
 # 🔹 Step 6: ML Model (Edge node logic)
@@ -139,4 +171,21 @@ disp.plot(ax=axs[1, 1])
 axs[1, 1].set_title("Confusion Matrix")
 
 plt.tight_layout()
+
+plt.figure(figsize=(12, 6))
+
+# 🔹 Left: Packet table (sample)
+plt.subplot(1, 2, 1)
+plt.axis('off')
+
+table = plt.table(
+    cellText=packet_df.head(15).values,
+    colLabels=packet_df.columns,
+    loc='center'
+)
+
+table.auto_set_font_size(False)
+table.set_fontsize(8)
+
+plt.title("Packet Logs (Source → Destination | Protocol | Status)")
 plt.show()
