@@ -1,3 +1,17 @@
+import hashlib
+
+class Block:
+    def __init__(self, node, trust, prev_hash):
+        self.node = node
+        self.trust = trust
+        self.prev_hash = prev_hash
+        self.hash = self.calculate_hash()
+
+    def calculate_hash(self):
+        data = str(self.node) + str(self.trust) + str(self.prev_hash)
+        return hashlib.sha256(data.encode()).hexdigest()
+
+
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -157,7 +171,31 @@ df["HybridTrust"] = (
     0.2 * df["NodeReliability"] +
     0.15 * df["Centrality"]
 )
+
+# 🔹 Blockchain initialization
+blockchain = []
+prev_hash = "0"
+
+for node in range(num_nodes):
+    block = Block(node, df.loc[node, "HybridTrust"], prev_hash)
+    blockchain.append(block)
+    prev_hash = block.hash
 # 🔹 Neighbor visualization table data
+
+import json
+
+block_data = []
+
+for b in blockchain:
+    block_data.append({
+        "node": b.node,
+        "trust": float(b.trust),
+        "prev_hash": b.prev_hash,
+        "hash": b.hash
+    })
+
+with open("blockchain.json", "w") as f:
+    json.dump(block_data, f)
 neighbor_info = []
 
 for node in G.nodes():
@@ -179,6 +217,10 @@ for node in G.nodes():
 neighbor_df = pd.DataFrame(neighbor_info, columns=[
     "Node", "Neighbors", "Own Trust", "Neighbor Avg", "Final Trust"
 ])
+
+print("\nSample Blockchain Entries:")
+for b in blockchain[:5]:
+    print(f"Node: {b.node}, Trust: {round(b.trust,3)}, Hash: {b.hash[:10]}")
 
 # 🔹 Step 8: Plot Trust graph
 # 🔹 Trust graph
