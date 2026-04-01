@@ -25,7 +25,7 @@ for i in range(num_nodes):
 
 # 🔹 Step 3: Malicious nodes
 malicious_nodes = random.sample(range(num_nodes), int(0.2 * num_nodes))
-
+centrality = nx.degree_centrality(G)
 for node in G.nodes():
     G.nodes[node]['malicious'] = node in malicious_nodes
 
@@ -118,6 +118,8 @@ for node in range(num_nodes):
 
 df["NodeReliability"] = node_reliability
 
+df["Centrality"] = [centrality[i] for i in range(num_nodes)]
+
 # 🔹 Step 6: ML Model (Edge node logic)
 X = df.drop("Label", axis=1)
 y = df["Label"]
@@ -150,9 +152,10 @@ packet_trust = success_count / (success_count + drop_count + 1e-5)
 
 # 🔹 Hybrid Trust (NEW - BEST FEATURE)
 df["HybridTrust"] = (
-    0.5 * df["FinalTrust"] +
-    0.3 * packet_trust +
-    0.2 * df["NodeReliability"]
+    0.4 * df["FinalTrust"] +
+    0.25 * packet_trust +
+    0.2 * df["NodeReliability"] +
+    0.15 * df["Centrality"]
 )
 # 🔹 Neighbor visualization table data
 neighbor_info = []
