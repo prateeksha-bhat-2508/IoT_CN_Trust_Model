@@ -35,6 +35,9 @@ packet_logs = []
 success_count = 0
 drop_count = 0
 
+node_success = {i: 0 for i in range(num_nodes)}
+node_drop = {i: 0 for i in range(num_nodes)}
+
 protocols = ["TCP", "UDP", "ICMP"]
 
 # 🔹 Step 5: Simulation loop
@@ -81,9 +84,11 @@ for node in G.nodes():
         if random.random() < drop:
             status = "Dropped"
             drop_count += 1
+            node_drop[node] += 1
         else:
             status = "Success"
             success_count += 1
+            node_success[node] += 1
 
         packet_logs.append([src_ip, dst_ip, protocol, status])
 
@@ -99,6 +104,19 @@ df = pd.DataFrame(data, columns=[
 packet_df = pd.DataFrame(packet_logs, columns=[
     "Source", "Destination", "Protocol", "Status"
 ])
+# 🔹 Node-wise reliability
+node_reliability = []
+
+for node in range(num_nodes):
+    total = node_success[node] + node_drop[node]
+    if total == 0:
+        reliability = 1
+    else:
+        reliability = node_success[node] / total
+
+    node_reliability.append(reliability)
+
+df["NodeReliability"] = node_reliability
 
 # 🔹 Step 6: ML Model (Edge node logic)
 X = df.drop("Label", axis=1)
@@ -131,8 +149,11 @@ df["FinalTrust"] = neighbor_trusts
 packet_trust = success_count / (success_count + drop_count + 1e-5)
 
 # 🔹 Hybrid Trust (NEW - BEST FEATURE)
-df["HybridTrust"] = 0.7 * df["FinalTrust"] + 0.3 * packet_trust
-
+df["HybridTrust"] = (
+    0.5 * df["FinalTrust"] +
+    0.3 * packet_trust +
+    0.2 * df["NodeReliability"]
+)
 # 🔹 Neighbor visualization table data
 neighbor_info = []
 
