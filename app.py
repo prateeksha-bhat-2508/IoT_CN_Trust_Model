@@ -39,6 +39,24 @@ nx.draw(G_chain, pos,
         arrows=True)
 
 st.pyplot(plt)
+st.subheader("📦 Block Explorer (Detailed View)")
+
+# Scrollable container
+with st.container(height=400):
+
+    for i, block in enumerate(blockchain):
+        st.markdown(f"""
+        ### 🔷 Block {i}
+
+        - **Node ID:** {block['node']}
+        - **Trust Value:** {round(block['trust'], 4)}
+        - **Previous Hash:** `{block['prev_hash']}`
+        - **Current Hash:** `{block['hash']}`
+        - **Nonce:** {block.get('nonce', 'N/A')}
+        - **Merkle Root:** {block.get('merkle_root', 'N/A')}
+
+        ---
+        """)
 # Merkle Tree
 # ------------------------
 st.subheader("Merkle Tree (20 Nodes)")
