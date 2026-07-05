@@ -1,17 +1,17 @@
-<h1>🚀 IoT Trust Management System using ML & Blockchain</h1>
+<h1> IoT Trust Management System using ML & Blockchain</h1>
 
-<h2>📌 Overview</h2>
+<h2> Overview</h2>
 <p>
 This project simulates an IoT network and evaluates the trustworthiness of nodes using machine learning, 
 network metrics, and a lightweight blockchain mechanism. It detects malicious behavior and ensures secure, 
 tamper-resistant storage of trust values.
 </p>
 
-<h2>🧠 Key Features</h2>
+<h2> Key Features</h2>
 <ul>
-    <li>🔗 IoT Network Simulation using graph-based topology</li>
-    <li>🤖 Machine Learning Detection for identifying malicious nodes</li>
-    <li>📊 Hybrid Trust Model combining:
+    <li> IoT Network Simulation using graph-based topology</li>
+    <li>Machine Learning Detection for identifying malicious nodes</li>
+    <li> Hybrid Trust Model combining:
         <ul>
             <li>Node behavior (PDR, Drop Rate, Delay)</li>
             <li>Neighbor influence</li>
@@ -19,8 +19,8 @@ tamper-resistant storage of trust values.
             <li>Graph centrality</li>
         </ul>
     </li>
-    <li>🔐 Blockchain Integration for secure and immutable trust storage</li>
-    <li>🌳 Merkle Tree Visualization for data integrity verification</li>
+    <li> Blockchain Integration for secure and immutable trust storage</li>
+    <li> Merkle Tree Visualization for data integrity verification</li>
 </ul>
 
 <h2>⚙️ Tech Stack</h2>
@@ -33,7 +33,7 @@ tamper-resistant storage of trust values.
     <li>Streamlit</li>
 </ul>
 
-<h2>🏗️ System Architecture</h2>
+<h2> System Architecture</h2>
 <pre>
 IoT Network Simulation (NetworkX)
             ↓
@@ -64,7 +64,7 @@ Visualization (Graphs + Merkle Tree + UI)
     <li>Merkle Tree used for <b>hierarchical hash verification</b></li>
 </ul>
 
-<h2>📊 Outputs</h2>
+<h2> Outputs</h2>
 <ul>
     <li>Trust value graphs (Node-wise & Time-based)</li>
     <li>IoT network visualization</li>
@@ -74,7 +74,7 @@ Visualization (Graphs + Merkle Tree + UI)
     <li>Merkle tree structure</li>
 </ul>
 
-<h2>▶️ How to Run</h2>
+<h2> How to Run</h2>
 
 <h3>1. Run Backend (Generate Data)</h3>
 <pre>python main.py</pre>
@@ -82,7 +82,7 @@ Visualization (Graphs + Merkle Tree + UI)
 <h3>2. Run Frontend (Visualization)</h3>
 <pre>streamlit run app.py</pre>
 
-<h2>📁 Project Structure</h2>
+<h2> Project Structure</h2>
 <pre>
 IoT_Trust_Model/
 │
@@ -92,7 +92,7 @@ IoT_Trust_Model/
 └── README.md
 </pre>
 
-<h2>💡 Future Improvements</h2>
+<h2> Future Improvements</h2>
 <ul>
     <li>Real-time integration with network simulators (NS3 / Packet Tracer)</li>
     <li>Advanced blockchain (Proof-of-Work / Smart Contracts)</li>
@@ -100,7 +100,7 @@ IoT_Trust_Model/
     <li>Live IoT data integration</li>
 </ul>
 
-<h2>💬 Summary</h2>
+<h2>Summary</h2>
 <p>
 This project combines <b>network simulation, machine learning, and blockchain</b> to build a secure and intelligent 
 trust evaluation system for IoT environments.
