@@ -1,4 +1,3 @@
-
 <h1>🚀 IoT Trust Management System using ML & Blockchain</h1>
 
 <h2>📌 Overview</h2>
@@ -106,6 +105,20 @@ IoT_Trust_Model/
 This project combines <b>network simulation, machine learning, and blockchain</b> to build a secure and intelligent 
 trust evaluation system for IoT environments.
 </p>
+## 📊 Dashboard Analytics & 🏗️ System Architecture
+
+<table>
+  <tr>
+    <td align="center">
+      <b>Dashboard Analytics</b><br><br>
+      <img src="assets/Dashboard_Analytics_Phase_1.png" alt="Dashboard Analytics" width="450"/>
+    </td>
+    <td align="center">
+      <b>System Architecture</b><br><br>
+      <img src="assets/Phase_1_Architecture.png" alt="System Architecture" width="450"/>
+    </td>
+  </tr>
+</table>
 
 </div>
 
