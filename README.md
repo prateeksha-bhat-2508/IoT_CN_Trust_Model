@@ -23,7 +23,7 @@ tamper-resistant storage of trust values.
     <li> Merkle Tree Visualization for data integrity verification</li>
 </ul>
 
-<h2>⚙️ Tech Stack</h2>
+<h2> Tech Stack</h2>
 <ul>
     <li>Python</li>
     <li>NetworkX</li>
@@ -48,7 +48,7 @@ Blockchain Storage (Hash + Previous Hash)
 Visualization (Graphs + Merkle Tree + UI)
 </pre>
 
-<h2>🔗 Blockchain Implementation</h2>
+<h2> Blockchain Implementation</h2>
 <ul>
     <li>Each node’s trust value is stored as a <b>block</b></li>
     <li>Each block contains:
@@ -105,7 +105,7 @@ IoT_Trust_Model/
 This project combines <b>network simulation, machine learning, and blockchain</b> to build a secure and intelligent 
 trust evaluation system for IoT environments.
 </p>
-## 📊 Dashboard Analytics & 🏗️ System Architecture
+##  Dashboard Analytics &  System Architecture
 
 <table>
   <tr>
